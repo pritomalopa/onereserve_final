@@ -24,6 +24,14 @@
   19:'https://maps.google.com/maps?q=24.3642,88.8354&z=13&output=embed',
   20:'https://maps.google.com/maps?q=24.3667,88.5996&z=14&output=embed'
 } %}
+{% set map_url = None %}
+{% if place.latitude and place.longitude %}
+  {% set map_url = "https://maps.google.com/maps?q=" ~ place.latitude ~ "," ~ place.longitude ~ "&z=13&output=embed" %}
+{% elif place.google_map_url %}
+  {% set map_url = place.google_map_url %}
+{% else %}
+  {% set map_url = MAP_URLS.get(place.place_id) %}
+{% endif %}
 
 <!-- Hero -->
 <div class="relative h-72 md:h-[460px] overflow-hidden bg-slate-300">
@@ -110,8 +118,8 @@
           <i data-lucide="map" class="w-5 h-5 text-blue-500"></i>
           <h2 class="font-black text-slate-800">Location Map</h2>
         </div>
-        {% if MAP_URLS[place.place_id] %}
-        <iframe src="{{ MAP_URLS[place.place_id] }}" width="100%" height="300"
+        {% if map_url %}
+        <iframe src="{{ map_url }}" width="100%" height="300"
           style="border:0;" allowfullscreen loading="lazy"
           title="Map of {{ place.place_name }}"></iframe>
         {% else %}
@@ -122,7 +130,7 @@
           </div>
         </div>
         {% endif %}
-        {% if place.latitude %}
+        {% if place.latitude and place.longitude %}
         <div class="px-5 py-3 bg-slate-50 text-xs text-slate-500 flex items-center gap-1.5">
           <i data-lucide="crosshair" class="w-3.5 h-3.5"></i>
           {{ "%.4f"|format(place.latitude) }}, {{ "%.4f"|format(place.longitude) }}
