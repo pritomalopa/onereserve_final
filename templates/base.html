@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>{% block title %}OneReserve — Bangladesh Tourism{% endblock %}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{brand:{50:'#eff6ff',600:'#2563eb',700:'#1d4ed8',900:'#1e3a8a'},teal:{400:'#2dd4bf',500:'#14b8a6',600:'#0d9488'}},animation:{'fade-in':'fadeIn .4s ease-out','slide-up':'slideUp .5s ease-out'},keyframes:{fadeIn:{'0%':{opacity:'0'},'100%':{opacity:'1'}},slideUp:{'0%':{opacity:'0',transform:'translateY(24px)'},'100%':{opacity:'1',transform:'translateY(0)'}}}}}}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{font-family:'Inter',sans-serif}
+.gradient-hero{background:linear-gradient(135deg,#1e3a8a 0%,#0d9488 100%)}
+.card-hover{transition:transform .25s ease,box-shadow .25s ease}
+.card-hover:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,.13)}
+.glass{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.2)}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#0d9488);transition:opacity .2s,transform .15s}
+.btn-primary:hover{opacity:.92;transform:translateY(-1px)}
+.toast-wrap{position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{pointer-events:auto;padding:.75rem 1.25rem;border-radius:.625rem;color:#fff;font-size:.875rem;font-weight:500;display:flex;align-items:center;gap:.5rem;min-width:280px;max-width:380px;animation:slideUp .3s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.18);cursor:pointer}
+.toast.success{background:#059669}.toast.error{background:#dc2626}.toast.info{background:#2563eb}.toast.warning{background:#d97706}
+.nav-link{transition:color .2s}.nav-link:hover{color:#14b8a6}
+.badge{display:inline-flex;align-items:center;padding:.18rem .55rem;border-radius:9999px;font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+input:focus,select:focus,textarea:focus{outline:none}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#f1f5f9}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<!-- NAVBAR -->
+<nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2 group flex-shrink-0">
+        <div class="w-9 h-9 rounded-xl btn-primary flex items-center justify-center shadow">
+          <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+        </div>
+        <span class="font-black text-xl text-slate-800">One<span class="text-teal-500">Reserve</span></span>
+      </a>
+      <div class="hidden md:flex items-center gap-5">
+        <a href="/" class="nav-link text-sm font-medium text-slate-600">Home</a>
+        <a href="/destinations" class="nav-link text-sm font-medium text-slate-600">Destinations</a>
+        {% if current_user.is_authenticated %}
+        <a href="/my-bookings" class="nav-link text-sm font-medium text-slate-600">My Bookings</a>
+        <a href="/wishlist" class="nav-link text-sm font-medium text-slate-600 flex items-center gap-1">
+          <i data-lucide="heart" class="w-4 h-4"></i>Wishlist
+        </a>
+        <div class="relative" id="umw">
+          <button onclick="toggleUM()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 transition rounded-full px-3 py-1.5">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white text-xs font-black">
+              {{current_user.full_name[0]|upper}}
+            </div>
+            <span class="text-sm font-semibold text-slate-700">{{current_user.full_name.split()[0]}}</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
+          </button>
+          <div id="um" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+            <a href="/profile" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i>My Profile</a>
+            <a href="/my-bookings" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"><i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>My Bookings</a>
+            <a href="/wishlist" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"><i data-lucide="heart" class="w-4 h-4 text-slate-400"></i>Wishlist</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="/admin" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"><i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>Admin Panel</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="/logout" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"><i data-lucide="log-out" class="w-4 h-4"></i>Logout</a>
+          </div>
+        </div>
+        {% else %}
+        <a href="/login" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition">Login</a>
+        <a href="/register" class="btn-primary text-white text-sm font-bold px-5 py-2 rounded-full shadow">Get Started</a>
+        {% endif %}
+      </div>
+      <button onclick="toggleMM()" class="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+  <div id="mm" class="hidden md:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-1">
+    <a href="/" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Home</a>
+    <a href="/destinations" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Destinations</a>
+    {% if current_user.is_authenticated %}
+    <a href="/my-bookings" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">My Bookings</a>
+    <a href="/wishlist" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Wishlist</a>
+    <a href="/profile" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Profile</a>
+    <a href="/admin" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Admin</a>
+    <a href="/logout" class="block py-2.5 px-3 rounded-xl text-red-600 font-medium hover:bg-red-50">Logout</a>
+    {% else %}
+    <a href="/login" class="block py-2.5 px-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Login</a>
+    <a href="/register" class="block py-2.5 px-3 rounded-xl text-blue-600 font-bold hover:bg-blue-50">Get Started Free</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toast-container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for cat, msg in messages %}
+<div class="toast {{cat}}" onclick="this.remove()">
+  <i data-lucide="{% if cat=='success' %}check-circle{% elif cat=='error' %}x-circle{% elif cat=='warning' %}alert-triangle{% else %}info{% endif %}" class="w-4 h-4 flex-shrink-0"></i>
+  <span>{{msg}}</span>
+</div>
+{% endfor %}
+{% endwith %}
+</div>
+
+<main class="flex-1">
+{% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-slate-900 text-slate-400 mt-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-9 h-9 rounded-xl btn-primary flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5 text-white"></i></div>
+          <span class="font-black text-xl text-white">One<span class="text-teal-400">Reserve</span></span>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed max-w-sm">Bangladesh's premier tourism reservation platform. Discover 20 stunning destinations, book buses and hotels seamlessly.</p>
+        <div class="flex gap-2 mt-4">
+          <span class="badge bg-blue-500/20 text-blue-300 px-2 py-1">Flask + MySQL</span>
+          <span class="badge bg-teal-500/20 text-teal-300 px-2 py-1">DBMS Final Project</span>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-white font-bold mb-4">Explore</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/destinations" class="hover:text-teal-400 transition">All Destinations</a></li>
+          <li><a href="/destinations?category=Coastal" class="hover:text-teal-400 transition">Coastal</a></li>
+          <li><a href="/destinations?category=Hills" class="hover:text-teal-400 transition">Hill Tracts</a></li>
+          <li><a href="/destinations?category=Heritage" class="hover:text-teal-400 transition">Heritage</a></li>
+          <li><a href="/destinations?category=Nature" class="hover:text-teal-400 transition">Nature</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-bold mb-4">Account</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/register" class="hover:text-teal-400 transition">Register</a></li>
+          <li><a href="/login" class="hover:text-teal-400 transition">Login</a></li>
+          <li><a href="/my-bookings" class="hover:text-teal-400 transition">My Bookings</a></li>
+          <li><a href="/wishlist" class="hover:text-teal-400 transition">Wishlist</a></li>
+          <li><a href="/admin" class="hover:text-teal-400 transition">Admin Dashboard</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-xs text-slate-500">© 2026 OneReserve. DBMS Final Project — Flask · SQLAlchemy · MySQL · Tailwind CSS</p>
+      <div class="flex items-center gap-4 text-xs text-slate-500">
+        <span class="flex items-center gap-1"><i data-lucide="database" class="w-3.5 h-3.5"></i>MySQL</span>
+        <span class="flex items-center gap-1"><i data-lucide="code-2" class="w-3.5 h-3.5"></i>Python/Flask</span>
+        <span class="flex items-center gap-1"><i data-lucide="palette" class="w-3.5 h-3.5"></i>Tailwind CSS</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+lucide.createIcons();
+function toggleUM(){document.getElementById('um').classList.toggle('hidden')}
+function toggleMM(){document.getElementById('mm').classList.toggle('hidden')}
+document.addEventListener('click',function(e){const w=document.getElementById('umw');if(w&&!w.contains(e.target))document.getElementById('um')?.classList.add('hidden')});
+document.querySelectorAll('.toast').forEach(t=>{setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400)},4500)});
+function showToast(msg,type='info'){
+  const icons={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 flex-shrink-0"></i><span>${msg}</span>`;
+  el.onclick=()=>el.remove();
+  document.getElementById('toast-container').appendChild(el);
+  lucide.createIcons();
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(()=>el.remove(),400)},4500);
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

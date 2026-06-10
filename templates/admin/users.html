@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}All Users — Admin{% endblock %}
+{% block content %}
+
+<div class="gradient-hero py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <div class="text-xs font-black text-teal-300 uppercase tracking-widest mb-1">Admin</div>
+      <h1 class="text-3xl font-black text-white">All Users</h1>
+      <p class="text-white/60 text-sm mt-1">{{ result.total }} registered users</p>
+    </div>
+    <a href="/admin" class="glass text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 hover:bg-white/20 transition">
+      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>Dashboard
+    </a>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-wide">
+            <th class="px-5 py-3.5 text-left">User</th>
+            <th class="px-5 py-3.5 text-left">Email</th>
+            <th class="px-5 py-3.5 text-left">Phone</th>
+            <th class="px-5 py-3.5 text-left">Joined</th>
+            <th class="px-5 py-3.5 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for u in result.users %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                  {{ u.full_name[0]|upper }}
+                </div>
+                <div>
+                  <div class="font-bold text-slate-800 text-sm">{{ u.full_name }}</div>
+                  <div class="text-xs text-slate-400">#{{ u.user_id }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-slate-600 text-xs">{{ u.email }}</td>
+            <td class="px-5 py-4 text-slate-500 text-xs">{{ u.phone or '—' }}</td>
+            <td class="px-5 py-4 text-slate-400 text-xs">{{ u.created_at[:10] if u.created_at else '' }}</td>
+            <td class="px-5 py-4 text-center">
+              <span class="badge {% if u.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                {{ 'Active' if u.is_active else 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="px-5 py-16 text-center text-slate-400">
+            <i data-lucide="users" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
+            <p class="text-sm">No users found.</p>
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if result.pages > 1 %}
+  <div class="flex justify-center items-center gap-2 mt-6 flex-wrap">
+    {% if result.current_page > 1 %}
+    <a href="?page={{ result.current_page-1 }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>Prev
+    </a>
+    {% endif %}
+    {% for p in range(1, result.pages+1) %}
+    <a href="?page={{ p }}" class="w-9 h-9 rounded-xl text-sm font-bold transition flex items-center justify-center
+      {% if p == result.current_page %}btn-primary text-white shadow{% else %}border border-slate-200 hover:bg-slate-50 text-slate-700{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if result.current_page < result.pages %}
+    <a href="?page={{ result.current_page+1 }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      Next<i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

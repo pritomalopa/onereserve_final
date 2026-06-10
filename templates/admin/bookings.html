@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}All Bookings — Admin{% endblock %}
+{% block content %}
+
+<div class="gradient-hero py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <div class="text-xs font-black text-teal-300 uppercase tracking-widest mb-1">Admin</div>
+      <h1 class="text-3xl font-black text-white">All Bookings</h1>
+      <p class="text-white/60 text-sm mt-1">{{ result.total }} total bookings</p>
+    </div>
+    <a href="/admin" class="glass text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 hover:bg-white/20 transition">
+      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>Dashboard
+    </a>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Status filter -->
+  <div class="flex flex-wrap gap-2 mb-6">
+    {% for s, label in [('','All'),('pending','Pending'),('confirmed','Confirmed'),('completed','Completed'),('cancelled','Cancelled')] %}
+    <a href="/admin/bookings?status={{ s }}" class="px-4 py-2 rounded-xl text-sm font-bold transition
+      {% if status == s %}btn-primary text-white shadow{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+      {{ label }}
+      {% if s == '' %}<span class="ml-1.5 badge bg-white/20 text-white">{{ result.total }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-wide">
+            <th class="px-5 py-3.5 text-left">#ID</th>
+            <th class="px-5 py-3.5 text-left">User</th>
+            <th class="px-5 py-3.5 text-left">Destination</th>
+            <th class="px-5 py-3.5 text-left">Hotel</th>
+            <th class="px-5 py-3.5 text-right">Amount</th>
+            <th class="px-5 py-3.5 text-center">Status</th>
+            <th class="px-5 py-3.5 text-left">Date</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for b in result.bookings %}
+          {% set bb = b.bus_booking %}
+          {% set bh = b.hotel_booking %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-5 py-3.5 font-black text-slate-500 text-xs">#{{ b.booking_id }}</td>
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">U</div>
+                <span class="text-xs text-slate-600 font-semibold">User #{{ b.user_id }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5">
+              <div class="font-semibold text-slate-800 text-xs">{{ bb.destination if bb else '—' }}</div>
+              {% if bb %}<div class="text-xs text-slate-400">{{ bb.bus_name }}</div>{% endif %}
+            </td>
+            <td class="px-5 py-3.5 text-xs text-slate-500">
+              {% if bh %}{{ bh.hotel_name }}<br><span class="text-slate-400">{{ bh.checkin_date }} → {{ bh.checkout_date }}</span>{% else %}—{% endif %}
+            </td>
+            <td class="px-5 py-3.5 text-right font-black text-blue-700">৳{{ "%.0f"|format(b.total_amount) }}</td>
+            <td class="px-5 py-3.5 text-center">
+              <span class="badge text-xs
+                {% if b.booking_status=='confirmed' %}bg-green-100 text-green-700
+                {% elif b.booking_status=='completed' %}bg-blue-100 text-blue-700
+                {% elif b.booking_status=='cancelled' %}bg-red-100 text-red-700
+                {% else %}bg-amber-100 text-amber-700{% endif %}">
+                {{ b.booking_status|title }}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 text-slate-400 text-xs">{{ b.booking_date[:10] if b.booking_date else '' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="px-5 py-16 text-center text-slate-400">
+            <i data-lucide="calendar-off" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
+            <p class="text-sm">No bookings found.</p>
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if result.pages > 1 %}
+  <div class="flex justify-center items-center gap-2 mt-6 flex-wrap">
+    {% if result.current_page > 1 %}
+    <a href="?page={{ result.current_page-1 }}&status={{ status }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>Prev
+    </a>
+    {% endif %}
+    {% for p in range(1, result.pages+1) %}
+    <a href="?page={{ p }}&status={{ status }}" class="w-9 h-9 rounded-xl text-sm font-bold transition flex items-center justify-center
+      {% if p == result.current_page %}btn-primary text-white shadow{% else %}border border-slate-200 hover:bg-slate-50 text-slate-700{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if result.current_page < result.pages %}
+    <a href="?page={{ result.current_page+1 }}&status={{ status }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      Next<i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

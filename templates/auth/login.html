@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Sign In — OneReserve{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-md">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-slide-up">
+      <div class="gradient-hero p-8 text-center">
+        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="log-in" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-black text-white">Welcome Back</h1>
+        <p class="text-white/70 text-sm mt-1">Sign in to your OneReserve account</p>
+      </div>
+      <div class="p-8">
+        <form method="POST" action="/login">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
+              <div class="relative">
+                <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="email" name="email" required placeholder="you@example.com"
+                  class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition text-sm">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Password</label>
+              <div class="relative">
+                <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="password" name="password" id="pw" required placeholder="Your password"
+                  class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition text-sm">
+                <button type="button" onclick="togglePw()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="eye" id="ei" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" name="remember_me" class="w-4 h-4 rounded border-slate-300 text-blue-600 accent-blue-600">
+              <span class="text-sm text-slate-600">Remember me</span>
+            </label>
+          </div>
+          <button type="submit" class="w-full btn-primary text-white font-black py-3 rounded-xl mt-6 shadow-lg text-sm">
+            Sign In
+          </button>
+        </form>
+        <!-- Demo hint -->
+        <div class="mt-5 p-4 bg-blue-50 rounded-xl border border-blue-100">
+          <p class="text-xs font-bold text-blue-700 mb-2 flex items-center gap-1.5">
+            <i data-lucide="info" class="w-3.5 h-3.5"></i>Demo Credentials
+          </p>
+          <p class="text-xs text-blue-600">Email: <code class="bg-blue-100 px-1.5 py-0.5 rounded font-mono">rahim.uddin@gmail.com</code></p>
+          <p class="text-xs text-blue-600 mt-1">Password: <code class="bg-blue-100 px-1.5 py-0.5 rounded font-mono">Password@123</code></p>
+          <button onclick="fillDemo()" type="button" class="mt-2 text-xs font-bold text-blue-700 underline hover:no-underline">Fill automatically</button>
+        </div>
+        <p class="text-center text-sm text-slate-500 mt-5">
+          Don't have an account? <a href="/register" class="text-blue-600 font-bold hover:text-blue-700">Register free</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function togglePw(){
+  const i=document.getElementById('pw'),e=document.getElementById('ei');
+  if(i.type==='password'){i.type='text';e.setAttribute('data-lucide','eye-off');}
+  else{i.type='password';e.setAttribute('data-lucide','eye');}
+  lucide.createIcons();
+}
+function fillDemo(){
+  document.querySelector('input[name="email"]').value='rahim.uddin@gmail.com';
+  document.querySelector('input[name="password"]').value='Password@123';
+}
+</script>
+{% endblock %}

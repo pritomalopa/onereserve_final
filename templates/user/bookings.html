@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}My Bookings — OneReserve{% endblock %}
+{% block content %}
+
+<div class="gradient-hero py-10">
+  <div class="max-w-5xl mx-auto px-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-black text-white">My Bookings</h1>
+      <p class="text-white/70 text-sm mt-1">{{ result.total }} booking(s) found</p>
+    </div>
+    <a href="/destinations" class="flex items-center gap-2 bg-white/20 hover:bg-white/30 transition text-white font-bold px-4 py-2.5 rounded-xl text-sm glass">
+      <i data-lucide="plus" class="w-4 h-4"></i>New Booking
+    </a>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+  {% if result.bookings %}
+  <div class="space-y-5">
+    {% for b in result.bookings %}
+    {% set bb = b.bus_booking %}
+    {% set bh = b.hotel_booking %}
+    {% set pay = b.payment %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover">
+      <!-- Top bar with status -->
+      <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-black text-slate-400">Booking #{{ b.booking_id }}</span>
+          <span class="badge text-xs
+            {% if b.booking_status == 'confirmed' %}bg-green-100 text-green-700
+            {% elif b.booking_status == 'completed' %}bg-blue-100 text-blue-700
+            {% elif b.booking_status == 'pending' %}bg-amber-100 text-amber-700
+            {% elif b.booking_status == 'cancelled' %}bg-red-100 text-red-700
+            {% else %}bg-slate-100 text-slate-600{% endif %}">
+            <i data-lucide="{% if b.booking_status == 'confirmed' %}check-circle{% elif b.booking_status == 'completed' %}star{% elif b.booking_status == 'cancelled' %}x-circle{% else %}clock{% endif %}" class="w-3 h-3 mr-0.5"></i>
+            {{ b.booking_status|title }}
+          </span>
+        </div>
+        <div class="text-xs text-slate-400 flex items-center gap-1">
+          <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+          {{ b.booking_date[:10] if b.booking_date else '' }}
+        </div>
+      </div>
+
+      <div class="p-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Destination + Bus -->
+          <div class="md:col-span-2 space-y-3">
+            {% if bb %}
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+              </div>
+              <div>
+                <div class="font-black text-slate-800">{{ bb.destination or 'N/A' }}</div>
+                <div class="text-xs text-slate-500 mt-0.5">{{ bb.district }}</div>
+                <div class="flex items-center gap-2 mt-1.5 text-xs text-slate-500">
+                  <i data-lucide="bus-front" class="w-3.5 h-3.5 text-blue-500"></i>
+                  <span class="font-semibold">{{ bb.bus_name }}</span>
+                  <span class="badge bg-slate-100 text-slate-600">{{ bb.bus_type }}</span>
+                  <span>· {{ bb.seat_quantity }} seat(s)</span>
+                </div>
+                {% if bb.departure_time %}
+                <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  {{ bb.departure_time[:16] if bb.departure_time else '' }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+            {% if bh %}
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+              </div>
+              <div>
+                <div class="font-bold text-slate-700 text-sm">{{ bh.hotel_name }}</div>
+                <div class="text-xs text-slate-500">{{ bh.room_name }}</div>
+                <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                  <i data-lucide="calendar" class="w-3 h-3"></i>
+                  {{ bh.checkin_date }} → {{ bh.checkout_date }} ({{ bh.nights }} nights)
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Amount + actions -->
+          <div class="flex flex-col items-end justify-between gap-3">
+            <div class="text-right">
+              <div class="text-2xl font-black text-blue-700">৳{{ "%.0f"|format(b.total_amount) }}</div>
+              {% if pay %}
+              <div class="text-xs font-bold mt-0.5
+                {% if pay.payment_status == 'completed' %}text-green-600
+                {% elif pay.payment_status == 'refunded' %}text-orange-500
+                {% else %}text-slate-400{% endif %}
+                flex items-center gap-1 justify-end">
+                <i data-lucide="{% if pay.payment_status == 'completed' %}check{% elif pay.payment_status == 'refunded' %}rotate-ccw{% else %}clock{% endif %}" class="w-3 h-3"></i>
+                {{ pay.payment_method|upper if pay else '' }} · {{ pay.payment_status|title }}
+              </div>
+              {% endif %}
+            </div>
+            <div class="flex flex-wrap gap-2 justify-end">
+              {% if b.booking_status not in ['cancelled','completed'] %}
+              <form method="POST" action="/my-bookings/{{ b.booking_id }}/cancel"
+                onsubmit="return confirm('Cancel this booking? This cannot be undone.')">
+                <button type="submit" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200 text-red-600 text-xs font-bold hover:bg-red-50 transition">
+                  <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>Cancel
+                </button>
+              </form>
+              {% endif %}
+              {% if b.booking_status in ['confirmed','completed'] and bb %}
+              <a href="/destinations/{{ bb.schedule_id if bb else '' }}" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 text-blue-600 text-xs font-bold hover:bg-blue-50 transition">
+                <i data-lucide="star" class="w-3.5 h-3.5"></i>Review
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if result.pages > 1 %}
+  <div class="flex justify-center items-center gap-2 mt-8 flex-wrap">
+    {% if result.has_prev %}
+    <a href="?page={{ result.current_page-1 }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>Prev
+    </a>
+    {% endif %}
+    {% for p in range(1, result.pages+1) %}
+    <a href="?page={{ p }}" class="w-9 h-9 rounded-xl text-sm font-bold transition flex items-center justify-center
+      {% if p == result.current_page %}btn-primary text-white shadow{% else %}border border-slate-200 hover:bg-slate-50 text-slate-700{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if result.has_next %}
+    <a href="?page={{ result.current_page+1 }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      Next<i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="text-center py-24">
+    <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-5">
+      <i data-lucide="calendar-off" class="w-12 h-12 text-slate-300"></i>
+    </div>
+    <h3 class="text-xl font-black text-slate-600 mb-2">No bookings yet</h3>
+    <p class="text-slate-400 text-sm mb-6">Start exploring Bangladesh and make your first booking!</p>
+    <a href="/destinations" class="btn-primary text-white font-black px-6 py-3 rounded-xl inline-flex items-center gap-2 shadow-lg">
+      <i data-lucide="map" class="w-4 h-4"></i>Explore Destinations
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

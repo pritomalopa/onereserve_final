@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed — OneReserve{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-teal-50 flex items-center justify-center py-12 px-4">
+  <div class="max-w-lg w-full">
+
+    <!-- Success card -->
+    <div class="bg-white rounded-3xl shadow-xl border border-green-100 overflow-hidden animate-slide-up">
+      <!-- Green header -->
+      <div class="bg-gradient-to-br from-green-500 to-teal-500 p-10 text-center">
+        <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce" style="animation-iteration-count:3">
+          <i data-lucide="check-circle" class="w-10 h-10 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-black text-white">Booking Confirmed!</h1>
+        <p class="text-white/80 mt-1 text-sm">Your trip has been successfully booked.</p>
+        <div class="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1.5 mt-3 text-white text-sm font-bold">
+          <i data-lucide="hash" class="w-3.5 h-3.5"></i>Booking #{{ booking.booking_id }}
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="p-6 space-y-4">
+        <!-- Destination -->
+        {% if booking.bus_bookings %}
+        {% set bb = booking.bus_bookings[0] %}
+        <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <div class="text-xs font-black text-slate-400 uppercase tracking-widest">Destination</div>
+            <div class="font-black text-slate-800">{{ bb.destination }}</div>
+            <div class="text-xs text-slate-500">{{ bb.district }}</div>
+          </div>
+        </div>
+
+        <!-- Bus -->
+        <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-2xl">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bus-front" class="w-5 h-5 text-white"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-xs font-black text-slate-400 uppercase tracking-widest">Bus</div>
+            <div class="font-bold text-slate-800 text-sm">{{ bb.bus_name }}</div>
+            <div class="text-xs text-slate-500">{{ bb.company_name }} · {{ bb.seat_quantity }} seat(s)</div>
+          </div>
+          <div class="font-black text-blue-700 text-sm">৳{{ "%.0f"|format(bb.fare) }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Hotel -->
+        {% if booking.hotel_bookings %}
+        {% set bh = booking.hotel_bookings[0] %}
+        <div class="flex items-center gap-3 p-4 bg-teal-50 rounded-2xl">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-xs font-black text-slate-400 uppercase tracking-widest">Hotel</div>
+            <div class="font-bold text-slate-800 text-sm">{{ bh.hotel_name }}</div>
+            <div class="text-xs text-slate-500">{{ bh.room_name }} · {{ bh.nights }} night(s) · {{ bh.checkin_date }} → {{ bh.checkout_date }}</div>
+          </div>
+          <div class="font-black text-teal-700 text-sm">৳{{ "%.0f"|format(bh.room_cost) }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Payment -->
+        {% if booking.payments %}
+        {% set pay = booking.payments.first() %}
+        <div class="flex items-center gap-3 p-4 bg-green-50 rounded-2xl">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="credit-card" class="w-5 h-5 text-white"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-xs font-black text-slate-400 uppercase tracking-widest">Payment</div>
+            <div class="font-bold text-slate-800 text-sm">{{ pay.payment_method|upper }} · {{ pay.transaction_ref }}</div>
+            <div class="text-xs text-green-600 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Completed</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Total -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+          <span class="font-black text-slate-700 text-lg">Total Paid</span>
+          <span class="font-black text-blue-700 text-2xl">৳{{ "%.0f"|format(booking.total_amount) }}</span>
+        </div>
+
+        <!-- Status badge -->
+        <div class="flex items-center justify-center">
+          <span class="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-black
+            {% if booking.booking_status == 'confirmed' %}bg-green-100 text-green-700
+            {% elif booking.booking_status == 'pending' %}bg-amber-100 text-amber-700
+            {% else %}bg-slate-100 text-slate-600{% endif %}">
+            <i data-lucide="{% if booking.booking_status == 'confirmed' %}check-circle{% else %}clock{% endif %}" class="w-4 h-4"></i>
+            {{ booking.booking_status|title }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-6 pb-6 flex flex-col sm:flex-row gap-3">
+        <a href="/my-bookings" class="flex-1 btn-primary text-white font-black py-3 rounded-xl text-sm text-center shadow-lg flex items-center justify-center gap-2">
+          <i data-lucide="calendar" class="w-4 h-4"></i>My Bookings
+        </a>
+        <a href="/destinations" class="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-sm text-center hover:bg-slate-50 transition flex items-center justify-center gap-2">
+          <i data-lucide="map" class="w-4 h-4"></i>Explore More
+        </a>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="mt-5 p-4 bg-white/80 rounded-2xl border border-slate-100 text-center">
+      <p class="text-xs text-slate-500">🎉 Have a wonderful trip! Check <a href="/my-bookings" class="text-blue-600 font-bold hover:underline">My Bookings</a> to manage your reservation.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

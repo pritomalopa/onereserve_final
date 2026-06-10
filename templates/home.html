@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}OneReserve — Discover Beautiful Bangladesh{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="gradient-hero relative overflow-hidden min-h-[92vh] flex items-center">
+  <div class="absolute inset-0 opacity-10"><svg width="100%" height="100%"><defs><pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0L0 0 0 40" fill="none" stroke="white" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#g)"/></svg></div>
+  <div class="absolute top-20 right-10 w-72 h-72 bg-teal-400/20 rounded-full blur-3xl animate-pulse"></div>
+  <div class="absolute bottom-20 left-10 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style="animation-delay:1.5s"></div>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center w-full">
+    <div class="inline-flex items-center gap-2 glass text-white/90 text-xs font-bold px-4 py-1.5 rounded-full mb-6 animate-fade-in">
+      <i data-lucide="sparkles" class="w-3.5 h-3.5 text-teal-300"></i> Bangladesh's #1 Tourism Platform
+    </div>
+    <h1 class="text-5xl md:text-7xl font-black text-white mb-5 leading-tight animate-slide-up">
+      Discover<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-blue-300">Beautiful</span><br>Bangladesh
+    </h1>
+    <p class="text-lg md:text-xl text-white/75 max-w-2xl mx-auto mb-10 animate-fade-in">
+      From the world's longest beach to ancient Buddhist ruins — explore {{stats.places}} breathtaking destinations with bus & hotel booking in one place.
+    </p>
+    <!-- Search -->
+    <div class="glass rounded-2xl p-3 max-w-3xl mx-auto shadow-2xl animate-slide-up">
+      <form action="/destinations" method="GET" class="flex flex-col sm:flex-row gap-3">
+        <div class="flex-1 relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input name="q" type="text" placeholder="Search destinations, districts..."
+            class="w-full bg-white rounded-xl pl-10 pr-4 py-3 text-slate-800 text-sm focus:ring-2 focus:ring-teal-400 shadow-sm"/>
+        </div>
+        <div class="relative">
+          <i data-lucide="layers" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <select name="category" class="bg-white rounded-xl pl-10 pr-8 py-3 text-slate-700 text-sm appearance-none focus:ring-2 focus:ring-teal-400 shadow-sm min-w-[140px]">
+            <option value="">All Types</option>
+            {% for cat in categories %}<option value="{{cat}}">{{cat}}</option>{% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn-primary text-white font-bold px-8 py-3 rounded-xl shadow-lg whitespace-nowrap">
+          <i data-lucide="search" class="w-4 h-4 inline mr-1.5 -mt-0.5"></i>Explore
+        </button>
+      </form>
+    </div>
+    <!-- Stats -->
+    <div class="flex flex-wrap justify-center gap-8 mt-14 animate-fade-in">
+      <div class="text-center"><div class="text-4xl font-black text-white">{{stats.places}}+</div><div class="text-xs text-white/60 mt-1">Destinations</div></div>
+      <div class="w-px bg-white/20 hidden sm:block self-stretch"></div>
+      <div class="text-center"><div class="text-4xl font-black text-white">{{stats.districts}}</div><div class="text-xs text-white/60 mt-1">Districts</div></div>
+      <div class="w-px bg-white/20 hidden sm:block self-stretch"></div>
+      <div class="text-center"><div class="text-4xl font-black text-white">{{stats.bookings}}+</div><div class="text-xs text-white/60 mt-1">Bookings</div></div>
+      <div class="w-px bg-white/20 hidden sm:block self-stretch"></div>
+      <div class="text-center"><div class="text-4xl font-black text-white">60+</div><div class="text-xs text-white/60 mt-1">Partner Hotels</div></div>
+    </div>
+  </div>
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 animate-bounce"><i data-lucide="chevrons-down" class="w-6 h-6"></i></div>
+</section>
+
+<!-- CATEGORY PILLS -->
+<section class="py-8 bg-white border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap justify-center gap-3">
+      {% set cicons={'Coastal':'waves','Hills':'mountain','Heritage':'landmark','Nature':'tree-pine','Wetland':'droplets','Island':'anchor'} %}
+      {% set ccolors={'Coastal':'bg-blue-50 text-blue-700 border-blue-200','Hills':'bg-green-50 text-green-700 border-green-200','Heritage':'bg-amber-50 text-amber-700 border-amber-200','Nature':'bg-emerald-50 text-emerald-700 border-emerald-200','Wetland':'bg-cyan-50 text-cyan-700 border-cyan-200','Island':'bg-violet-50 text-violet-700 border-violet-200'} %}
+      <a href="/destinations" class="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 bg-slate-800 text-white border-slate-800 font-bold text-sm"><i data-lucide="grid-3x3" class="w-4 h-4"></i>All</a>
+      {% for cat in categories %}
+      <a href="/destinations?category={{cat}}" class="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 transition-all font-semibold text-sm hover:shadow-md {{ccolors.get(cat,'bg-slate-50 text-slate-600 border-slate-200')}}">
+        <i data-lucide="{{cicons.get(cat,'map-pin')}}" class="w-4 h-4"></i>{{cat}}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED -->
+<section class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <div class="text-xs font-black text-teal-600 uppercase tracking-widest mb-1">Editor's Pick</div>
+        <h2 class="text-3xl font-black text-slate-800">Featured Destinations</h2>
+        <p class="text-slate-500 text-sm mt-1">Handpicked gems from across Bangladesh</p>
+      </div>
+      <a href="/destinations?featured=true" class="hidden sm:flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-700">View all <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for place in featured %}{% include "partials/place_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <div class="text-xs font-black text-blue-600 uppercase tracking-widest mb-1">Simple Process</div>
+      <h2 class="text-3xl font-black text-slate-800">Book Your Trip in 4 Steps</h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {% set steps=[('search','Choose Destination','Browse 20 places','from-blue-500 to-blue-600'),('bus-front','Select Bus','Pick schedule & company','from-teal-500 to-teal-600'),('building-2','Book Hotel','60+ partner hotels','from-violet-500 to-violet-600'),('check-circle','Confirm & Go','Instant confirmation','from-emerald-500 to-emerald-600')] %}
+      {% for icon,title,desc,grad in steps %}
+      <div class="text-center group">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br {{grad}} flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="{{icon}}" class="w-7 h-7 text-white"></i>
+        </div>
+        <div class="text-xs font-black text-slate-400 mb-1">STEP {{loop.index}}</div>
+        <h3 class="font-bold text-slate-800 mb-1 text-sm">{{title}}</h3>
+        <p class="text-xs text-slate-500">{{desc}}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR GRID -->
+<section class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <div class="text-xs font-black text-teal-600 uppercase tracking-widest mb-1">Trending Now</div>
+        <h2 class="text-3xl font-black text-slate-800">Popular Places</h2>
+      </div>
+      <a href="/destinations" class="hidden sm:flex items-center gap-1 text-sm font-bold text-blue-600">All destinations <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {% for place in popular %}
+      <a href="/destinations/{{place.place_id}}" class="card-hover group relative rounded-2xl overflow-hidden shadow-sm border border-slate-100 block">
+        <div class="h-40 overflow-hidden">
+          {% if place.image_path %}
+          <img src="/{{place.image_path}}" alt="{{place.place_name}}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          {% endif %}
+          <div class="{% if place.image_path %}hidden{% else %}flex{% endif %} w-full h-full bg-gradient-to-br from-blue-400 to-teal-500 items-center justify-center">
+            <i data-lucide="image" class="w-10 h-10 text-white/40"></i>
+          </div>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-3">
+          <div class="badge bg-white/20 text-white text-xs mb-1">{{place.category}}</div>
+          <div class="font-bold text-white text-sm leading-tight">{{place.place_name}}</div>
+          <div class="text-white/70 text-xs">{{place.district_name}}</div>
+        </div>
+        {% if place.avg_rating %}<div class="absolute top-2 right-2 flex items-center gap-1 bg-white/90 rounded-full px-2 py-0.5 text-xs font-black text-amber-600"><i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>{{place.avg_rating}}</div>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-20 gradient-hero relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10"><svg width="100%" height="100%"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="white"/></pattern></defs><rect width="100%" height="100%" fill="url(#dots)"/></svg></div>
+  <div class="relative max-w-3xl mx-auto px-4 text-center">
+    <h2 class="text-4xl md:text-5xl font-black text-white mb-4">Ready to Explore Bangladesh?</h2>
+    <p class="text-white/75 mb-8 text-lg">Join thousands of travellers discovering the beauty of Bangladesh.</p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="/register" class="bg-white text-blue-700 font-black px-8 py-3.5 rounded-xl hover:bg-blue-50 transition shadow-lg">Create Free Account</a>
+      <a href="/destinations" class="glass text-white font-bold px-8 py-3.5 rounded-xl hover:bg-white/20 transition">Browse Destinations</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

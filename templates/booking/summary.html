@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Booking Summary — OneReserve{% endblock %}
+{% block content %}
+
+<!-- Progress -->
+<div class="bg-white border-b border-slate-100 py-4 sticky top-16 z-40 shadow-sm">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="flex items-center gap-2 text-xs overflow-x-auto pb-1">
+      <span class="text-slate-400 whitespace-nowrap flex items-center gap-1"><span class="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></span>Bus Selected</span>
+      <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
+      <span class="text-slate-400 whitespace-nowrap flex items-center gap-1"><span class="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center"><i data-lucide="check" class="w-3 h-3"></i></span>Hotel Selected</span>
+      <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
+      <span class="font-black text-blue-600 whitespace-nowrap flex items-center gap-1"><span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">3</span>Summary</span>
+      <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 flex-shrink-0"></i>
+      <span class="text-slate-400 whitespace-nowrap flex items-center gap-1"><span class="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-black">4</span>Confirm</span>
+    </div>
+    <div class="h-1.5 bg-slate-100 rounded-full mt-2.5"><div class="h-1.5 btn-primary rounded-full" style="width:75%"></div></div>
+  </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-black text-slate-800">Review Your Booking</h1>
+    <p class="text-slate-500 text-sm mt-1">Check all details before confirming your trip.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-5">
+
+      <!-- Destination -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <h2 class="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+          <i data-lucide="map-pin" class="w-4 h-4 text-blue-500"></i>Destination
+        </h2>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center flex-shrink-0 shadow">
+            <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <div class="font-black text-slate-800 text-lg">{{ schedule.place.place_name }}</div>
+            <div class="text-sm text-slate-500 flex items-center gap-1">
+              <i data-lucide="navigation" class="w-3.5 h-3.5"></i>{{ schedule.place.district.district_name }}
+              <span class="badge bg-slate-100 text-slate-600 ml-1">{{ schedule.place.category }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bus -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <h2 class="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+          <i data-lucide="bus-front" class="w-4 h-4 text-blue-500"></i>Bus Details
+        </h2>
+        <div class="flex items-start gap-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow">
+            <i data-lucide="bus-front" class="w-6 h-6 text-white"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-black text-slate-800">{{ schedule.bus.bus_name }}</div>
+            <div class="flex flex-wrap gap-2 mt-1.5">
+              <span class="badge {% if 'AC' in schedule.bus.bus_type %}bg-green-100 text-green-700{% else %}bg-slate-100 text-slate-600{% endif %}">{{ schedule.bus.bus_type }}</span>
+              <span class="text-xs text-slate-500">{{ schedule.bus.company.company_name }}</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-4 text-center">
+              <div class="bg-slate-50 rounded-xl p-3">
+                <div class="font-black text-slate-800">{{ schedule.departure_time.strftime('%H:%M') if schedule.departure_time else '--' }}</div>
+                <div class="text-xs text-slate-400 mt-0.5">Departure</div>
+                <div class="text-xs text-slate-500">{{ schedule.departure_city }}</div>
+              </div>
+              <div class="bg-blue-50 rounded-xl p-3 flex flex-col items-center justify-center">
+                <i data-lucide="arrow-right" class="w-5 h-5 text-blue-400 mb-1"></i>
+                <div class="text-xs font-bold text-blue-600">{{ schedule.journey_hours() }}h</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3">
+                <div class="font-black text-slate-800">{{ schedule.arrival_time.strftime('%H:%M') if schedule.arrival_time else '--' }}</div>
+                <div class="text-xs text-slate-400 mt-0.5">Arrival</div>
+                <div class="text-xs text-slate-500">{{ schedule.place.place_name }}</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-sm">
+              <span class="text-slate-500">{{ seats }} seat(s) × ৳{{ "%.0f"|format(schedule.fare) }}</span>
+              <span class="font-black text-blue-700">৳{{ "%.0f"|format(cost.bus_cost) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hotel -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <h2 class="font-black text-slate-700 mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+          <i data-lucide="building-2" class="w-4 h-4 text-blue-500"></i>Hotel Details
+        </h2>
+        <div class="flex items-start gap-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow">
+            <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-black text-slate-800">{{ room_type.hotel.hotel_name }}</div>
+            <div class="text-xs text-slate-400 mt-0.5">{{ room_type.hotel.address }}</div>
+            <div class="mt-3 grid grid-cols-2 gap-3">
+              <div class="bg-slate-50 rounded-xl p-3">
+                <div class="text-xs text-slate-400 mb-0.5">Room Type</div>
+                <div class="font-black text-slate-800 text-sm">{{ room_type.room_name }}</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3">
+                <div class="text-xs text-slate-400 mb-0.5">Guests</div>
+                <div class="font-black text-slate-800 text-sm">Up to {{ room_type.room_capacity }}</div>
+              </div>
+              <div class="bg-teal-50 rounded-xl p-3">
+                <div class="text-xs text-slate-400 mb-0.5">Check-in</div>
+                <div class="font-black text-teal-800 text-sm">{{ checkin }}</div>
+              </div>
+              <div class="bg-teal-50 rounded-xl p-3">
+                <div class="text-xs text-slate-400 mb-0.5">Check-out</div>
+                <div class="font-black text-teal-800 text-sm">{{ checkout }}</div>
+              </div>
+            </div>
+            {% if room_type.amenities %}
+            <div class="flex flex-wrap gap-1 mt-3">
+              {% for am in room_type.amenities.split(',')[:6] %}
+              <span class="badge bg-teal-50 text-teal-700">{{ am.strip() }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-sm">
+              <span class="text-slate-500">{{ cost.nights }} night(s) × ৳{{ "%.0f"|format(cost.room_price_night) }}</span>
+              <span class="font-black text-blue-700">৳{{ "%.0f"|format(cost.hotel_cost) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment sidebar -->
+    <div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
+        <h2 class="font-black text-slate-800 mb-5">Payment Summary</h2>
+
+        <div class="space-y-3 mb-4">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500 flex items-center gap-1"><i data-lucide="bus-front" class="w-3.5 h-3.5"></i>Bus fare</span>
+            <span class="font-bold">৳{{ "%.0f"|format(cost.bus_cost) }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500 flex items-center gap-1"><i data-lucide="building-2" class="w-3.5 h-3.5"></i>Hotel cost</span>
+            <span class="font-bold">৳{{ "%.0f"|format(cost.hotel_cost) }}</span>
+          </div>
+          <div class="border-t border-slate-100 pt-3 flex justify-between">
+            <span class="font-black text-slate-800">Total</span>
+            <span class="font-black text-blue-700 text-xl">৳{{ "%.0f"|format(cost.total_amount) }}</span>
+          </div>
+        </div>
+
+        <form method="POST" action="/book/confirm" id="cfm">
+          <input type="hidden" name="schedule_id" value="{{ cost.schedule_id }}">
+          <input type="hidden" name="room_type_id" value="{{ cost.room_type_id }}">
+          <input type="hidden" name="checkin" value="{{ checkin }}">
+          <input type="hidden" name="checkout" value="{{ checkout }}">
+          <input type="hidden" name="seats" value="{{ seats }}">
+
+          <div class="mb-4">
+            <label class="block text-sm font-bold text-slate-700 mb-2">Payment Method</label>
+            <div class="grid grid-cols-2 gap-2">
+              {% for m,label,color in [('bkash','bKash','bg-pink-50 border-pink-200 text-pink-700'),('nagad','Nagad','bg-orange-50 border-orange-200 text-orange-700'),('rocket','Rocket','bg-violet-50 border-violet-200 text-violet-700'),('card','Card','bg-blue-50 border-blue-200 text-blue-700')] %}
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer hover:border-blue-300 transition {{ color }} has-[:checked]:border-blue-500">
+                <input type="radio" name="payment_method" value="{{ m }}" {% if m=='bkash' %}checked{% endif %} class="w-4 h-4 accent-blue-600">
+                <span class="text-xs font-bold">{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <div class="mt-2">
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer hover:border-blue-300 transition bg-slate-50 border-slate-200 text-slate-700 has-[:checked]:border-blue-500">
+                <input type="radio" name="payment_method" value="bank_transfer" class="w-4 h-4 accent-blue-600">
+                <span class="text-xs font-bold">Bank Transfer</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Notes <span class="font-normal text-slate-400">(optional)</span></label>
+            <textarea name="notes" rows="2" placeholder="Any special requests..."
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none transition"></textarea>
+          </div>
+
+          <button type="submit" id="cfmbtn" class="w-full btn-primary text-white font-black py-3.5 rounded-xl shadow-lg text-sm">
+            <i data-lucide="check-circle" class="w-4 h-4 inline mr-1.5 -mt-0.5"></i>Confirm & Pay ৳{{ "%.0f"|format(cost.total_amount) }}
+          </button>
+          <p class="text-xs text-slate-400 text-center mt-3 flex items-center justify-center gap-1">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-green-500"></i>Secure booking. Free cancellation.
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('cfm').addEventListener('submit',function(){
+  const btn=document.getElementById('cfmbtn');
+  btn.disabled=true;
+  btn.innerHTML='<i data-lucide="loader-2" class="w-4 h-4 inline mr-1.5 -mt-0.5 animate-spin"></i>Processing...';
+  lucide.createIcons();
+});
+</script>
+{% endblock %}

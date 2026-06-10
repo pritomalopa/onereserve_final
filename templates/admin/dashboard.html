@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — OneReserve{% endblock %}
+{% block content %}
+
+<!-- Admin header -->
+<div class="gradient-hero py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <div class="text-xs font-black text-teal-300 uppercase tracking-widest mb-1">OneReserve Admin</div>
+        <h1 class="text-3xl font-black text-white">Dashboard</h1>
+        <p class="text-white/60 text-sm mt-1">Overview of all operations</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/admin/bookings" class="glass text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 hover:bg-white/20 transition">
+          <i data-lucide="calendar" class="w-4 h-4"></i>All Bookings
+        </a>
+        <a href="/admin/users" class="glass text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 hover:bg-white/20 transition">
+          <i data-lucide="users" class="w-4 h-4"></i>All Users
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    {% set cards = [
+      ('users','Total Users', stats.total_users, 'from-blue-500 to-blue-600','user'),
+      ('calendar','Total Bookings', stats.total_bookings, 'from-teal-500 to-teal-600','calendar'),
+      ('check-circle','Confirmed', stats.confirmed_bookings, 'from-green-500 to-green-600','check-circle'),
+      ('x-circle','Cancelled', stats.cancelled_bookings, 'from-red-400 to-red-500','x-circle'),
+      ('banknote','Revenue (৳)', stats.total_revenue|int, 'from-violet-500 to-violet-600','banknote'),
+      ('bus-front','Top Company', stats.top_bus_company[:8] if stats.top_bus_company else 'N/A', 'from-amber-500 to-orange-500','bus-front'),
+    ] %}
+    {% for icon, label, value, grad, luc in cards %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex flex-col gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br {{ grad }} flex items-center justify-center shadow-sm">
+        <i data-lucide="{{ luc }}" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <div class="font-black text-slate-800 text-xl leading-tight">{{ value }}</div>
+        <div class="text-xs text-slate-400 mt-0.5">{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Most popular place banner -->
+  <div class="bg-gradient-to-r from-blue-600 to-teal-500 rounded-2xl p-5 flex items-center gap-4 text-white shadow-lg">
+    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+      <i data-lucide="trophy" class="w-7 h-7 text-amber-300"></i>
+    </div>
+    <div>
+      <div class="text-xs font-black text-white/70 uppercase tracking-widest">Most Popular Destination</div>
+      <div class="text-2xl font-black mt-0.5">{{ stats.most_popular_place }}</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Revenue Chart -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="font-black text-slate-800">Monthly Revenue 2026</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Confirmed payment totals by month</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+          <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
+        </div>
+      </div>
+      <div style="position:relative;height:240px">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Popular Destinations Chart -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="font-black text-slate-800">Popular Destinations</h2>
+          <p class="text-xs text-slate-400 mt-0.5">By total bookings</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+          <i data-lucide="bar-chart-3" class="w-5 h-5 text-white"></i>
+        </div>
+      </div>
+      <div style="position:relative;height:240px">
+        <canvas id="placesChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking status breakdown -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <h2 class="font-black text-slate-800 mb-5 flex items-center gap-2">
+        <i data-lucide="pie-chart" class="w-5 h-5 text-blue-500"></i>Booking Status
+      </h2>
+      <div style="position:relative;height:200px">
+        <canvas id="statusChart"></canvas>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-4">
+        {% for label, val, color in [('Confirmed', stats.confirmed_bookings,'bg-green-500'),('Cancelled', stats.cancelled_bookings,'bg-red-400'),('Total', stats.total_bookings,'bg-blue-500')] %}
+        <div class="flex items-center gap-2 text-xs">
+          <div class="w-2.5 h-2.5 rounded-full {{ color }} flex-shrink-0"></div>
+          <span class="text-slate-500">{{ label }}: <span class="font-bold text-slate-700">{{ val }}</span></span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent bookings table -->
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="font-black text-slate-800 flex items-center gap-2">
+          <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i>Recent Bookings
+        </h2>
+        <a href="/admin/bookings" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+          View all<i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100 text-xs font-black text-slate-400 uppercase tracking-wide">
+              <th class="px-4 py-3 text-left">#</th>
+              <th class="px-4 py-3 text-left">Destination</th>
+              <th class="px-4 py-3 text-left">Amount</th>
+              <th class="px-4 py-3 text-left">Status</th>
+              <th class="px-4 py-3 text-left">Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for b in bookings.bookings[:8] %}
+            {% set bb = b.bus_booking %}
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-4 py-3 font-black text-slate-500 text-xs">#{{ b.booking_id }}</td>
+              <td class="px-4 py-3 font-semibold text-slate-800 text-xs">{{ bb.destination if bb else 'N/A' }}</td>
+              <td class="px-4 py-3 font-black text-blue-700 text-xs">৳{{ "%.0f"|format(b.total_amount) }}</td>
+              <td class="px-4 py-3">
+                <span class="badge text-xs
+                  {% if b.booking_status=='confirmed' %}bg-green-100 text-green-700
+                  {% elif b.booking_status=='completed' %}bg-blue-100 text-blue-700
+                  {% elif b.booking_status=='cancelled' %}bg-red-100 text-red-700
+                  {% else %}bg-amber-100 text-amber-700{% endif %}">
+                  {{ b.booking_status|title }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-slate-400 text-xs">{{ b.booking_date[:10] if b.booking_date else '' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400 text-sm">No bookings yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popular destinations table -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-black text-slate-800 flex items-center gap-2">
+        <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>Destination Performance
+      </h2>
+      <span class="badge bg-amber-100 text-amber-700">Top {{ popular|length }}</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 text-xs font-black text-slate-400 uppercase tracking-wide">
+            <th class="px-5 py-3 text-left">Rank</th>
+            <th class="px-5 py-3 text-left">Destination</th>
+            <th class="px-5 py-3 text-left">Category</th>
+            <th class="px-5 py-3 text-left">District</th>
+            <th class="px-5 py-3 text-right">Bookings</th>
+            <th class="px-5 py-3 text-right">Rating</th>
+            <th class="px-5 py-3 text-right">Reviews</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for p in popular %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-5 py-3">
+              <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black
+                {% if loop.index == 1 %}bg-amber-400 text-white
+                {% elif loop.index == 2 %}bg-slate-300 text-white
+                {% elif loop.index == 3 %}bg-orange-400 text-white
+                {% else %}bg-slate-100 text-slate-500{% endif %}">
+                {{ loop.index }}
+              </div>
+            </td>
+            <td class="px-5 py-3 font-bold text-slate-800">{{ p.place_name }}</td>
+            <td class="px-5 py-3"><span class="badge bg-blue-100 text-blue-700">{{ p.category }}</span></td>
+            <td class="px-5 py-3 text-slate-500 text-xs">{{ p.district_name }}</td>
+            <td class="px-5 py-3 text-right font-black text-teal-700">{{ p.total_bookings }}</td>
+            <td class="px-5 py-3 text-right">
+              {% if p.avg_rating %}
+              <span class="flex items-center gap-1 justify-end text-xs font-bold text-amber-600">
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400 text-amber-400"></i>{{ p.avg_rating }}
+              </span>
+              {% else %}<span class="text-slate-300 text-xs">—</span>{% endif %}
+            </td>
+            <td class="px-5 py-3 text-right text-slate-500 text-xs">{{ p.review_count }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="px-5 py-10 text-center text-slate-400 text-sm">No data available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Users -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-black text-slate-800 flex items-center gap-2">
+        <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>Recent Users
+      </h2>
+      <a href="/admin/users" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+        View all<i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 text-xs font-black text-slate-400 uppercase tracking-wide">
+            <th class="px-5 py-3 text-left">User</th>
+            <th class="px-5 py-3 text-left">Email</th>
+            <th class="px-5 py-3 text-left">Phone</th>
+            <th class="px-5 py-3 text-left">Joined</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for u in users.users %}
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+                  {{ u.full_name[0]|upper }}
+                </div>
+                <span class="font-semibold text-slate-800 text-xs">{{ u.full_name }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3 text-slate-500 text-xs">{{ u.email }}</td>
+            <td class="px-5 py-3 text-slate-500 text-xs">{{ u.phone or '—' }}</td>
+            <td class="px-5 py-3 text-slate-400 text-xs">{{ u.created_at[:10] if u.created_at else '' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 text-sm">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Revenue chart
+const revData = {{ revenue | tojson }};
+const revLabels = revData.map(r => r.month_name ? r.month_name.slice(0,3) : '');
+const revValues = revData.map(r => parseFloat(r.confirmed_revenue || 0));
+
+new Chart(document.getElementById('revenueChart'), {
+  type: 'bar',
+  data: {
+    labels: revLabels.length ? revLabels : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{
+      label: 'Revenue (৳)',
+      data: revValues.length ? revValues : [0],
+      backgroundColor: 'rgba(37,99,235,0.15)',
+      borderColor: '#2563eb',
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '৳' + ctx.parsed.y.toLocaleString() } } },
+    scales: { y: { beginAtZero: true, grid: { color:'#f1f5f9' }, ticks: { color:'#94a3b8', font: { size:11 } } }, x: { grid: { display:false }, ticks: { color:'#94a3b8', font: { size:11 } } } }
+  }
+});
+
+// Popular places chart
+const popData = {{ popular | tojson }};
+const popLabels = popData.map(p => p.place_name ? p.place_name.replace("'s",'').slice(0,12) : '');
+const popValues = popData.map(p => parseInt(p.total_bookings || 0));
+const popColors = ['#2563eb','#0d9488','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#84cc16','#f97316'];
+
+new Chart(document.getElementById('placesChart'), {
+  type: 'bar',
+  data: {
+    labels: popLabels.length ? popLabels : ['No data'],
+    datasets: [{
+      label: 'Bookings',
+      data: popValues.length ? popValues : [0],
+      backgroundColor: popLabels.map((_,i) => popColors[i % popColors.length] + '30'),
+      borderColor: popLabels.map((_,i) => popColors[i % popColors.length]),
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true, grid: { color:'#f1f5f9' }, ticks: { color:'#94a3b8', font:{ size:10 } } }, y: { grid: { display:false }, ticks: { color:'#64748b', font:{ size:10 } } } }
+  }
+});
+
+// Status doughnut
+const total = {{ stats.total_bookings }};
+const conf  = {{ stats.confirmed_bookings }};
+const canc  = {{ stats.cancelled_bookings }};
+const pend  = Math.max(0, total - conf - canc);
+
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Confirmed','Cancelled','Pending'],
+    datasets: [{
+      data: [conf || 0, canc || 0, pend || 0],
+      backgroundColor: ['#22c55e','#ef4444','#f59e0b'],
+      borderWidth: 0,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed } } }
+  }
+});
+</script>
+{% endblock %}

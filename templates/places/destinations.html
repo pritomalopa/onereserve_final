@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Destinations — OneReserve{% endblock %}
+{% block content %}
+<div class="gradient-hero py-14">
+  <div class="max-w-7xl mx-auto px-4 text-center">
+    <h1 class="text-4xl font-black text-white mb-2">Explore Bangladesh</h1>
+    <p class="text-white/70">{{ result.total }} incredible destinations await</p>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <!-- Filters -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-8">
+    <form method="GET" action="/destinations" class="flex flex-wrap gap-3 items-end">
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-widest">Search</label>
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input name="q" value="{{ search_q }}" placeholder="Place name, district..."
+            class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm transition">
+        </div>
+      </div>
+      <div class="min-w-[150px]">
+        <label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-widest">Category</label>
+        <select name="category" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 focus:border-blue-400 text-sm bg-white">
+          <option value="">All Categories</option>
+          {% for cat in categories %}<option value="{{ cat }}" {% if category==cat %}selected{% endif %}>{{ cat }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="min-w-[150px]">
+        <label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-widest">District</label>
+        <select name="district_id" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 focus:border-blue-400 text-sm bg-white">
+          <option value="">All Districts</option>
+          {% for d in districts %}<option value="{{ d.district_id }}" {% if district_id==d.district_id %}selected{% endif %}>{{ d.district_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn-primary text-white font-bold px-6 py-2.5 rounded-xl shadow text-sm whitespace-nowrap">
+        <i data-lucide="filter" class="w-4 h-4 inline mr-1 -mt-0.5"></i>Filter
+      </button>
+      {% if search_q or category or district_id %}
+      <a href="/destinations" class="px-5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition whitespace-nowrap">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="flex items-center justify-between mb-6">
+    <p class="text-sm text-slate-500">Showing <span class="font-bold text-slate-800">{{ result.places|length }}</span> of <span class="font-bold text-slate-800">{{ result.total }}</span> destinations</p>
+  </div>
+
+  {% if result.places %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for place in result.places %}{% include "partials/place_card.html" %}{% endfor %}
+  </div>
+
+  {% if result.pages > 1 %}
+  <div class="flex justify-center items-center gap-2 mt-10 flex-wrap">
+    {% if result.has_prev %}
+    <a href="?page={{ result.current_page-1 }}&q={{ search_q }}&category={{ category }}&district_id={{ district_id or '' }}"
+      class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>Prev
+    </a>
+    {% endif %}
+    {% for p in range(1, result.pages+1) %}
+    <a href="?page={{ p }}&q={{ search_q }}&category={{ category }}&district_id={{ district_id or '' }}"
+      class="w-9 h-9 rounded-xl text-sm font-bold transition flex items-center justify-center {% if p==result.current_page %}btn-primary text-white shadow{% else %}border border-slate-200 hover:bg-slate-50 text-slate-700{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if result.has_next %}
+    <a href="?page={{ result.current_page+1 }}&q={{ search_q }}&category={{ category }}&district_id={{ district_id or '' }}"
+      class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition flex items-center gap-1">
+      Next<i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-24">
+    <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-5">
+      <i data-lucide="map-off" class="w-12 h-12 text-slate-300"></i>
+    </div>
+    <h3 class="text-xl font-black text-slate-600 mb-2">No destinations found</h3>
+    <p class="text-slate-400 mb-6 text-sm">Try adjusting your filters or search query.</p>
+    <a href="/destinations" class="btn-primary text-white font-bold px-6 py-2.5 rounded-xl inline-flex items-center gap-2 shadow">
+      <i data-lucide="rotate-ccw" class="w-4 h-4"></i>Clear Filters
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
